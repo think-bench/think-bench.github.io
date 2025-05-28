@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="THINK-Bench: Evaluating Thinking Efficiency and Chain-of-Thought Quality of Large Reasoning Models">
+  <meta name="keywords" content="MMSearch">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> THINK-Bench: Evaluating Thinking Efficiency and Chain-of-Thought Quality of Large Reasoning Models</title>
+
+
+  <link rel="icon" href="">
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="stylesheet" href="./static/css/leaderboard.css">
+
+  <script type="text/javascript" src="static/js/sort-table.js" defer></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var carouselElement = document.querySelector('#results-carousel');
+      if (!carouselElement) {
+        console.error('Carousel element not found');
+        return;
+      }
+      if (carouselElement) {
+        bulmaCarousel.attach(carouselElement, {
+          slidesToScroll: 1,
+          slidesToShow: 1,
+          infinite: true,
+          autoplay: false,
+          navigation: true,
+          pagination: true,
+          paginationClickable: true,
+          onInit: function (carousel) {
+            carousel.on('pagination:click', function (page) {
+              carousel.slideTo(page);
+            });
+          }
+        });
+      }
+    });
+  </script>
+  <script src="./static/js/explorer-index.js"></script>
+  <script src="./static/js/question_card.js"></script>
+
+  <style>
+    .icml-label {
+      color: red;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <!-- @PAN TODO: consider adding links? -->
+        <div class="navbar-item has-dropdown is-hoverable" style="text-align: center; position: relative;">
+          <a class="navbar-link" style="justify-content: center;">
+            More Research
+          </a>
+          <div class="navbar-dropdown"
+            style="text-align: center; left: 50%; transform: translateX(-50%); width: auto; min-width: 300px;">
+            <a class="navbar-item" href="https://arxiv.org/abs/2307.03109" style="justify-content: center;">
+              <b>A Survey on Evaluation of Large Language Models</b>
+              <p style="font-size:18px; display: inline; margin-left: 5px;">🔥</p>
+            </a>
+            <a class="navbar-item" href="https://arxiv.org/abs/2502.14494" style="justify-content: center;">
+              <b>StructFlowBench: A Structured Flow Benchmark for Multi-turn Instruction Following</b>
+              <p style="font-size:18px; display: inline; margin-left: 5px;">🔥</p>
+            </a>
+            <a class="navbar-item" href="https://arxiv.org/abs/2412.14847" style="justify-content: center;">
+              <b>A Survey of RWKV</b>
+              <p style="font-size:18px; display: inline; margin-left: 5px;">🔥</p>
+            </a>
+            <a class="navbar-item" href="https://arxiv.org/abs/2410.10672" style="justify-content: center;">
+              Large Language Model Evaluation via Matrix Nuclear Norm
+              <p style="font-size:18px; display: inline; margin-left: 5px;"></p>
+            </a>
+            <a class="navbar-item" href="https://arxiv.org/pdf/2502.15434" style="justify-content: center;">
+              Mixup Model Merge: Enhancing Model Merging Performance through Randomized Linear Interpolation
+            </a>
+            <a class="navbar-item" href="https://arxiv.org/abs/2502.14014" style="justify-content: center;">
+              SegRet: An Efficient Design for Semantic Segmentation with Retentive Network
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title is-bold">
+              <span class="mathvista" style="vertical-align: middle">THINK-Bench</span>
+            </h1>
+            <h2 class="subtitle is-3 publication-subtitle">
+              Evaluating Thinking Efficiency and Chain-of-Thought Quality of Large Reasoning Models
+            </h2>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a>Zhiyuan Li</a><sup style="color:#6fbf73;">1</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=drEkR50AAAAJ&hl=zh-CN&oi=sra">Yi Chang</a><sup
+                  style="color:#6fbf73;">1,</sup><sup style="color:#9400D3;">2,</sup><sup
+                  style="color:#ed4b82;">3</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=KVeRu2QAAAAJ&hl=zh-CN&oi=sra">Yuan Wu†</a><sup
+                  style="color:#6fbf73;">1</sup>,
+              </span>
+            </div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup style="color:#6fbf73;">1</sup>School of Artificial intelligence, JiLin
+                University,</span>
+              <br>
+              <span class="author-block"><sup style="color:#9400D3;">2</sup>Engineering Research Center of
+                Knowledge-Driven Human-Machine Intelligence, JiLin University,</span>
+              <br>
+              <span class="author-block"><sup style="color:#ed4b82;">3</sup>International Center of Future Science,
+                JiLin University</span>
+            </div>
+            <!-- <div class="emnlp-label">EMNLP2025</div> -->
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- PDF Link. -->
+                <!-- <span class="link-block">
+                <a href="https://arxiv.org/pdf/2505" 
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2505"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span> -->
+                <!-- Code Link. -->
+                <span class="link-block">
+                  <a href="https://github.com/ZhiyuanLi218/Think-Bench"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <!-- Dataset Link. -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/zhiyuan218/Think-Bench"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <!-- <i class="far fa-images"></i> -->
+                      <p style="font-size:18px">🤗</p>
+                      <!-- 🔗 -->
+                    </span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+                <!-- Visualization Link. -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/zhiyuan218/Think-Bench/viewer"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <p style="font-size:18px">🔮</p>
+                    </span>
+                    <span>Visualize</span>
+                  </a>
+                </span>
+                <!-- Leaderboard Link. -->
+                <span class="link-block">
+                  <a href="https://think-bench.github.io/#leaderboard"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <p style="font-size:18px">🏆</p>
+                    </span>
+                    <span>Leaderboard</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <section class="section">
+    <div class="container" style="margin-bottom: 2vh;">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Introduction</h2>
+          <div class="content has-text-justified">
+            <p>
+              Reasoning models have achieved significant advancements in handling complex tasks, often surpassing
+              traditional large language models. However, the challenge of overthinking remains common, significantly
+              hindering computational efficiency. This issue arises as models produce an excess of redundant tokens that
+              contribute little to the accuracy of answers, particularly in simpler tasks, resulting in considerable
+              waste of resources.
+            </p>
+            <p>
+              To address this issue systematically, we introduce <b>Think-Bench</b>, a benchmark designed to evaluate
+              the thinking efficiency of large reasoning models (LRMs). We propose a new efficiency metric and conduct a
+              comprehensive analysis of LRMs from multiple aspects, including the reasoning process and chain-of-thought
+              (CoT) characteristics.
+            </p>
+            <p>
+              Leveraging the Think-Bench benchmark and a novel evaluation strategy, we conduct a comprehensive analysis
+              of large reasoning models (LRMs), uncovering several key insights:
+              <b>(1)</b> Most LRMs tend to <b>overthink on simple tasks</b>, generating unnecessarily long reasoning
+              chains, while they show higher efficiency in hard problems;
+              <b>(2)</b> <b>There is a significant trade-off between efficiency and CoT quality among different
+                models.</b> Grok-3-mini-beta achieves the highest efficiency score, while models like Qwen3-235b-a22b
+              and Ernie-x1-turbo-32k stand out in CoT quality;
+              <b>(3)</b> <b>Models show task heterogeneity in different disciplinary tasks.</b> Mathematical tasks
+              generally have high token consumption and low reasoning efficiency, while chemistry and physics tasks show
+              higher reasoning efficiency and lower token occupancy rate. We hope Think-Bench serves as an important
+              benchmark for optimizing the performance of large reasoning models in the future.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="content has-text-centered">
+        <img src="static/image/radar.png" alt="grade-lv" width="40%" />
+        <p>The performance of various LRMs on<span class="mathvista">Think-Bench</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+
+      <div class="columns is-centered">
+        <div class="column is-full has-text-centered content">
+          <h2 class="title is-3" id="leaderboard">Leaderboard</h2>
+          <div class="content table-container">
+            <table class="js-sort-table" id="results" style="min-width: 900px;">
+              <thead>
+                <tr>
+                  <th><strong>Model name</strong></th>
+                  <th><strong>Efficiency</strong></th>
+                  <th><strong>Recall</strong></th>
+                  <th><strong>Precision</strong></th>
+                  <th><strong>Accuracy</strong></th>
+                  <th><strong>Reflection<br>Quality</strong></th>
+                  <th><strong>Thought<br>Num</strong></th>
+                  <th><strong>Tokens</strong></th>
+                  <th><strong>Useful<br>Tokens</strong></th>
+                  <th><strong>Reflection<br>Tokens</strong></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Claude-3.7-sonnet</td>
+                  <td>49.61%</td>
+                  <td>81.29%</td>
+                  <td>86.26%</td>
+                  <td>94.25%</td>
+                  <td>76.49%</td>
+                  <td><b>0.28</b></td>
+                  <td><b>942.82</b></td>
+                  <td><b>446.09</b></td>
+                  <td><b>496.73</b></td>
+                </tr>
+                <tr>
+                  <td>Deepseek-r1-distill-qwen-1.5b</td>
+                  <td>37.14%</td>
+                  <td>47.10%</td>
+                  <td>59.61%</td>
+                  <td>62.91%</td>
+                  <td>61.88%</td>
+                  <td>8.00</td>
+                  <td>3734.49</td>
+                  <td>1268.36</td>
+                  <td>2466.13</td>
+                </tr>
+                <tr>
+                  <td>Deepseek-r1-distill-qwen-7b</td>
+                  <td>49.53%</td>
+                  <td>63.65%</td>
+                  <td>77.29%</td>
+                  <td>68.51%</td>
+                  <td>77.70%</td>
+                  <td>9.42</td>
+                  <td>3504.76</td>
+                  <td>1641.91</td>
+                  <td>1862.85</td>
+                </tr>
+                <tr>
+                  <td>Deepseek-r1-distill-qwen-14b</td>
+                  <td>50.70%</td>
+                  <td>61.04%</td>
+                  <td>79.97%</td>
+                  <td>70.18%</td>
+                  <td>82.40%</td>
+                  <td>7.04</td>
+                  <td>2814.75</td>
+                  <td>1413.09</td>
+                  <td>1401.66</td>
+                </tr>
+                <tr>
+                  <td>Deepseek-r1-distill-qwen-32b</td>
+                  <td>52.62%</td>
+                  <td>64.17%</td>
+                  <td>83.76%</td>
+                  <td>75.93%</td>
+                  <td>84.46%</td>
+                  <td>6.27</td>
+                  <td>2697.70</td>
+                  <td>1352.93</td>
+                  <td>1344.77</td>
+                </tr>
+                <tr>
+                  <td>Deepseek-r1</td>
+                  <td>48.96%</td>
+                  <td>80.80%</td>
+                  <td>88.33%</td>
+                  <td>88.80%</td>
+                  <td>90.92%</td>
+                  <td>9.17</td>
+                  <td>3795.19</td>
+                  <td>1912.12</td>
+                  <td>1883.07</td>
+                </tr>
+                <tr>
+                  <td>Ernie-x1-turbo-32k</td>
+                  <td>47.02%</td>
+                  <td>82.03%</td>
+                  <td><b>88.67%</b></td>
+                  <td>89.89%</td>
+                  <td>90.97%</td>
+                  <td>12.75</td>
+                  <td>4692.21</td>
+                  <td>2221.32</td>
+                  <td>2470.89</td>
+                </tr>
+                <tr>
+                  <td>Grok-3-mini-beta</td>
+                  <td><b>61.69%</b></td>
+                  <td>81.56%</td>
+                  <td>86.51%</td>
+                  <td>91.85%</td>
+                  <td>88.20%</td>
+                  <td>0.38</td>
+                  <td>1891.34</td>
+                  <td>1169.05</td>
+                  <td>722.29</td>
+                </tr>
+                <tr>
+                  <td>Qwen3-235b-a22b</td>
+                  <td>46.14%</td>
+                  <td><b>85.80%</b></td>
+                  <td>86.97%</td>
+                  <td><b>94.91%</b></td>
+                  <td><b>92.16%</b></td>
+                  <td>13.35</td>
+                  <td>4969.05</td>
+                  <td>2448.29</td>
+                  <td>2520.76</td>
+                </tr>
+                <tr>
+                  <td>Qwq-plus</td>
+                  <td>44.58%</td>
+                  <td>80.40%</td>
+                  <td>85.08%</td>
+                  <td>89.60%</td>
+                  <td>89.67%</td>
+                  <td>22.63</td>
+                  <td>5738.37</td>
+                  <td>2646.73</td>
+                  <td>3091.64</td>
+                </tr>
+                <tr>
+                  <td>Glm-z1-air</td>
+                  <td>47.41%</td>
+                  <td>80.16%</td>
+                  <td>83.18%</td>
+                  <td>88.06%</td>
+                  <td>89.17%</td>
+                  <td>9.80</td>
+                  <td>3678.68</td>
+                  <td>1775.07</td>
+                  <td>1903.61</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATASET SECTION -->
+  <section class="hero is-light is-small">
+    <div class="hero-body has-text-centered">
+      <!-- <h1 class="title is-1 mathvista"><img src="static/images/logo.png" style="width:1.0em;vertical-align: middle" alt="Logo"/>MathVista Dataset</h1> -->
+      <h1 class="title is-1 mathvista">
+        <span class="mathvista" style="vertical-align: middle">Think-Bench Dataset</span>
+      </h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <!-- <div class="column is-full-width has-text-centered"> -->
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Overview</h2>
+          <div class="content has-text-justified">
+            <p>
+              <span class="mathvista">Think-Bench </span>is a pioneering benchmark designed to systematically evaluate
+              <b>thinking efficiency and Chain-of-Thought (CoT) quality</b> in Large Reasoning Models (LRMs). Comprising
+              1,375 questions across <b>mathematics, physics, and chemistry</b> with a balanced mix of simple and
+              difficulty tasks, the benchmark features 13,311 manually curated key reasoning step annotations to analyze
+              model behavior in structured, multi-step reasoning processes.
+            </p>
+            <div class="box m-5">
+              <div class="content has-text-centered">
+                <img src="static/image/dataset overview.png" alt="data-overview" style="max-width: 100%;" />
+                <p>
+                  Overview of
+                  <span class="mathvista">Think-Bench</span>.<br />
+                </p>
+              </div>
+              <div class="columns is-centered">
+                <div class="column" style="margin-right: -30rem;">
+                  <div class="content has-text-centered">
+                    <img src="static/image/distribute.png" alt="data-overview" style="max-width: 60%;" />
+                    <p>
+                      Distribution of
+                      <span class="mathvista">Think-Bench</span>.<br />
+                    </p>
+                  </div>
+                </div>
+                <div class="column" style="margin-right: -20rem;"></div>
+                <div class="content has-text-centered">
+                  <img src="static/image/statistics.png" alt="data-overview" style="max-width: 80%;" />
+                  <p>
+                    Key statistics of
+                    <span class="mathvista">Think-Bench</span>.<br />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Evaluation Strategy</h2>
+          <div class="content has-text-justified">
+
+            <p style="text-align: left;">
+              <span class="mathvista">Think-Bench </span> introduces a comprehensive framework to evaluate thinking
+              efficiency and Chain-of-Thought (CoT) quality through six efficiency metrics, two CoT quality metrics, and
+              Accuracy:
+            </p>
+
+            <strong style="text-align: left;">Efficiency Metrics:</strong>
+            <ul style="text-align: left;">
+              <li><strong>Tokens</strong>: Total token count to measure thinking cost.</li>
+              <li><strong>First Correct Tokens</strong>: Tokens used to reach the first correct answer, assessing
+                reasoning speed.</li>
+              <li><strong>Efficiency Score</strong>: Ratio of first correct tokens to total tokens, quantifying resource
+                utilization.</li>
+              <li><strong>Reflection Quality</strong>: Proportion of valid self-verifications (e.g., error detection,
+                new insights) among reflective steps.</li>
+              <li><strong>Reflection Tokens</strong>: Tokens used for post-answer verification, indicating redundancy.
+              </li>
+              <li><strong>Thought Num</strong>: Frequency of reasoning path changes, reflecting stability.</li>
+            </ul>
+
+            <strong style="text-align: left;">CoT Quality Metrics:</strong>
+            <ul style="text-align: left;">
+              <li><strong>Recall</strong>: Proportion of essential reasoning steps captured in the model’s output.</li>
+              <li><strong>Precision</strong>: Ratio of correct and relevant steps to total generated steps, penalizing
+                logical errors.</li>
+            </ul>
+
+            <strong style="text-align: left;">Accuracy</strong>: Proportion of correct answers.
+            </p>
+            <div class="box m-5">
+              <div class="content has-text-centered">
+                <img src="static/image/pipeline.png" alt="pipeline" style="max-width: 100%;" />
+                <p>
+                  Pipeline of <b>Thinking Efficiency and CoT Quality</b> Evaluation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS SECTION -->
+  <section class="hero is-light is-small">
+    <div class="hero-body has-text-centered">
+      <h1 class="title is-1 mathvista">Experiment Results</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered m-6">
+        <div class="column is-full has-text-centered content">
+          <h2 class="title is-3">More Results</h2>
+          <div id="results-carousel" class="carousel results-carousel">
+            <div class="item">
+              <div class="box m-5">
+                <div class="content has-text-centered">
+                  <img src="static/image/performance_discipline.png" alt="Comparative Performance"
+                    style="max-width: 90%;" />
+                  <p>Comparative Performance of Models in Chemistry, Physics, and Math.</p>
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="box m-5">
+                <div class="content has-text-centered">
+                  <img src="static/image/difficult_level.png" alt="Data Distribution" style="max-width: 90%;" />
+                  <p>Evaluation Results of CoT and Efficiency in Think-Bench Classified by Difficulty Levels.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="columns is-centered m-6">
+        <div class="column is-full has-text-centered content">
+          <h2 class="title is-3">Efficacy Evaluate Example</h2>
+          <div class="box m-5">
+            <div class="content has-text-centered">
+              <img src="static/image/efficiency_evaluate.png" style="max-width: 100%;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered m-6">
+        <div class="column is-full has-text-centered content">
+          <h2 class="title is-3">Error Example</h2>
+          <div class="box m-5">
+            <div class="content has-text-centered">
+              <img src="static/image/error_examp.png" width="60%" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- @PAN TODO: bibtex -->
+  <!-- <section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3 has-text-centered">BibTeX</h2>
+    <pre><code>@inproceedings{lu2024mathvista,
+  author    = {Lu, Pan and Bansal, Hritik and Xia, Tony and Liu, Jiacheng and Li, Chunyuan and Hajishirzi, Hannaneh and Cheng, Hao and Chang, Kai-Wei and Galley, Michel and Gao, Jianfeng},
+  title     = {MathVista: Evaluating Mathematical Reasoning of Foundation Models in Visual Contexts},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year      = {2024}
+}</code></pre>
+  </div>
+</section> -->
+
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is adapted from <a href="https://mathverse-cuhk.github.io/">MathVerse</a> and <a
+              href="https://nerfies.github.io/">Nerfies</a>, licensed under a <a rel="license"
+              href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
